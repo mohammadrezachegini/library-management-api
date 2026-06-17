@@ -2,7 +2,7 @@ from rest_framework import serializers
 from .models import Author, Book, Category
 
 # ── 1. Base serializer with dynamic field filtering ───────────
-class DynamicFieldSerializer(serializers.ModelSerialaizer):
+class DynamicFieldSerializer(serializers.ModelSerializer):
     '''
     A base serializer that allows you to pass a `fields` kwarg
     to limit which fields are returned. Uses set intersection to
@@ -55,27 +55,27 @@ class BookSerializer(DynamicFieldSerializer):
             "author",
             "author_name",
             "category",
-            "genre",
+            "genres",
             "status",
             "total_copies",
             "borrowed_copies",
             "available_copies",
             "is_available",
             "created_at",
-        ]        
+        ]
 
 
-        def validate_isbn(self, value):
-            # Strip Whitespace from both ends
-            value = value.strip()
-            # ISBN-13 must be exactly 13 digits
-            if len(value) != 13:
-                raise serializers.ValidationError("ISBN-13 must be "
-                                                  "exactly 13 digits.")
-            if not value.isdigit():
-                raise serializers.ValidationError("ISBN-13 must contain "
-                                                  "only digits.")           
-            return value
+    def validate_isbn(self, value):
+        # Strip Whitespace from both ends
+        value = value.strip()
+        # ISBN-13 must be exactly 13 digits
+        if len(value) != 13:
+            raise serializers.ValidationError("ISBN-13 must be "
+                                                "exactly 13 digits.")
+        if not value.isdigit():
+            raise serializers.ValidationError("ISBN-13 must contain "
+                                                "only digits.")           
+        return value
 
 
 # ── 5. Lightweight serializer for list views (OOP polymorphism) ─────
@@ -90,7 +90,7 @@ class BookListSerializer(BookSerializer):
             "id",
             "title",
             "author_name",
-            "genre",
+            "genres",
             "status",
             "is_available"
         ]
