@@ -94,4 +94,3 @@ class BookListSerializer(BookSerializer):
             "status",
             "is_available"
         ]
-        
