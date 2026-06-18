@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .models import Author, Book, Category
 
+
 # ── 1. Base serializer with dynamic field filtering ───────────
 class DynamicFieldSerializer(serializers.ModelSerializer):
     '''
@@ -21,8 +22,8 @@ class DynamicFieldSerializer(serializers.ModelSerializer):
             # Set intersection: only keep fields that were both requested AND exist
             for field_name in existing - allowed:
                 self.fields.pop(field_name)
-                
-                
+
+            
 # ── 2. Author serializer ──────────────
 class AuthorSerializer(DynamicFieldSerializer):
     full_name = serializers.ReadOnlyField()
@@ -63,8 +64,7 @@ class BookSerializer(DynamicFieldSerializer):
             "is_available",
             "created_at",
         ]
-
-
+        
     def validate_isbn(self, value):
         # Strip Whitespace from both ends
         value = value.strip()
