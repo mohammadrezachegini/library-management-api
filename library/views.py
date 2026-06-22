@@ -3,7 +3,7 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
 from .models import Author, Book, Category
-from serializers import (
+from .serializers import (
     AuthorSerializer,
     BookSerializer,
     BookListSerializer,
@@ -20,10 +20,10 @@ class BookListCreateView(generics.ListCreateAPIView):
             return BookListSerializer
         return BookSerializer
     
-    def query_set(self):
+    def get_queryset(self):
         queryset = super().get_queryset()
         genres = self.request.query_params.get("genres")
-        status_filter = self.request.qeury_params.get("status")
+        status_filter = self.request.query_params.get("status")
         author = self.request.query_params.get("author")
         
         if genres:
@@ -36,7 +36,7 @@ class BookListCreateView(generics.ListCreateAPIView):
         return queryset
 
 
-class BokDetailView(generics.RetrieveUpdateDestroyAPIView):
+class BookDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Book.objects.select_related("author", "category").all()
     serializer_class = BookSerializer
 
@@ -58,9 +58,13 @@ def borrow_book(request, pk):
         
     book.borrowed_copies += 1
     book.save()
-    return Response({
-        "message": f"You have successfully borrowed '{book.title}'."
-    }, status=status.HTTP_200_OK)
+    return Response(
+        {
+            "message": f"You borrowed '{book.title}'.",
+            "available_copies": book.available_copies,
+        },
+        status=status.HTTP_200_OK,
+    )
 
 
 # ── Author views ────────────

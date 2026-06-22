@@ -15,7 +15,7 @@ urlpatterns = [
     path("authors/", views.AuthorListCreateView.as_view(), 
          name="author-list-create"),
     path("authors/<int:pk>/", views.AuthorDetailView.as_view(), 
-         ame="author-detail"),
+         name="author-detail"),
     
     # Category endpoints
     path("categories/", views.CategoryListCreateView.as_view(), 
