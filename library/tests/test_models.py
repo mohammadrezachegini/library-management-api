@@ -11,6 +11,7 @@ def author():
 def category():
     return Category.objects.create(name="Dystopian")
 
+
 @pytest.fixture
 def book(author, category):
     return Book.objects.create(
@@ -20,7 +21,7 @@ def book(author, category):
         category=category,
         genre="fiction",
         total_copies=5,
-        borrowed_copies=2
+        borrowed_copies=2,
     )
 
 
@@ -31,7 +32,7 @@ def test_author_full(author):
 
 @pytest.mark.django_db
 def test_author_str(author):
-    assert str(author) == "John Doe"   
+    assert str(author) == "John Doe"
 
 
 @pytest.mark.django_db
@@ -88,4 +89,3 @@ def test_book_has_timestamps(book):
 def test_category_has_timestamps(category):
     assert category.created_at is not None
     assert category.updated_at is not None
-    

@@ -29,8 +29,8 @@ def book(author, category):
         total_copies=3,
         borrowed_copies=1,
     )
-    
-    
+
+
 # ── GET /api/books/ ───────────
 @pytest.mark.django_db
 def test_list_books_return_200(client, book):
@@ -57,14 +57,14 @@ def test_filter_books_by_genre(client, book):
 def test_filter_books_by_genre_no_match(client, book):
     response = client.get("/api/books/?genre=science")
     assert response.json() == []
-    
+
 
 @pytest.mark.django_db
 def test_filter_books_by_status(client, book):
     response = client.get("/api/books/?status=available")
     assert response.status_code == 200
     assert len(response.json()) == 1
-    
+
 
 @pytest.mark.django_db
 def test_filter_books_by_status_no_match(client, book):
@@ -83,7 +83,7 @@ def test_filter_books_by_author(client, book):
 def test_filter_books_by_author_no_match(client, book):
     response = client.get("/api/books/?author=2")
     assert response.json() == []
-    
+
 
 # ── POST /api/books/ ─────────────
 @pytest.mark.django_db
@@ -124,7 +124,8 @@ def test_borrow_book_decrement_copies(client, book):
     data = response.json()
     assert "available_copies" in data
     assert data["available_copies"] == 1
-    
+
+
 @pytest.mark.django_db
 def test_borrow_book_unavailable_returns_400(client, author, category):
     fully_borrowed = Book.objects.create(
@@ -145,6 +146,7 @@ def test_author_detail_returns_200(client, author):
     assert response.status_code == 200
     assert response.json()["full_name"] == "John Doe"
 
+
 # ── DELETE /api/books/{id}/ ────────
 @pytest.mark.django_db
 def test_delete_book_returns_204(client, book):
@@ -157,7 +159,7 @@ def test_deleted_book_not_on_the_list(client, book):
     client.delete(f"/api/books/{book.id}/")
     response = client.get("/api/books/")
     assert response.json() == []
-    
+
 
 # ── GET /api/stats/ ──────
 @pytest.mark.django_db
@@ -167,8 +169,8 @@ def test_state_return_correct_keys(client, book):
     assert "total_books" in data
     assert "by_genre" in data
     assert "by_status" in data
-    
-    
+
+
 @pytest.mark.django_db
 def test_stats_total_books(client, book):
     response = client.get("/api/stats/")

@@ -7,32 +7,32 @@ from .serializers import (
     AuthorSerializer,
     BookSerializer,
     BookListSerializer,
-    CategorySerializer
+    CategorySerializer,
 )
 
 
 # ── Book views ────────────────
 class BookListCreateView(generics.ListCreateAPIView):
     queryset = Book.objects.select_related("author", "category").all()
-    
+
     def get_serializer_class(self):
         if self.request.method == "GET":
             return BookListSerializer
         return BookSerializer
-    
+
     def get_queryset(self):
         queryset = super().get_queryset()
         genre = self.request.query_params.get("genre")
         status_filter = self.request.query_params.get("status")
         author = self.request.query_params.get("author")
-        
+
         if genre:
             queryset = queryset.filter(genre=genre)
         if status_filter:
             queryset = queryset.filter(status=status_filter)
         if author:
             queryset = queryset.filter(author__id=author)
-        
+
         return queryset
 
 
@@ -47,15 +47,17 @@ def borrow_book(request, pk):
     try:
         book = Book.objects.get(pk=pk)
     except Book.DoesNotExist:
-        return Response({
-            "error": "Book not found."
-        }, status=status.HTTP_404_NOT_FOUND)
-        
+        return Response(
+            {"error": "Book not found."},
+            status=status.HTTP_404_NOT_FOUND,
+        )
+
     if not book.is_available:
-        return Response({
-            "error": "Book is not available for borrowing."
-        }, status=status.HTTP_400_BAD_REQUEST)
-        
+        return Response(
+            {"error": "Book is not available for borrowing."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
     book.borrowed_copies += 1
     book.save()
     return Response(
@@ -97,13 +99,13 @@ def library_stats(request):
         s: Book.objects.filter(status=s).count()
         for s, _ in Book.STATUS_CHOICES
     }
-    
+
     data = {
         "total_books": Book.objects.count(),
         "total_authors": Author.objects.count(),
         "total_categories": Category.objects.count(),
         "by_genre": genre_stats,
-        "by_status": status_stats
+        "by_status": status_stats,
     }
-    
+
     return Response(data, status=status.HTTP_200_OK)

@@ -24,22 +24,29 @@ def book(author):
         total_copies=2,
         borrowed_copies=0,
     )
-    
-    
+
+
 # ── get_genre_stats ──────────
 @pytest.mark.django_db
 def test_get_genre_stats_return_all_genres(book):
     stats = get_genre_stats()
     print(f"Genre stats: {stats}")
-    assert set(stats.keys()) == {"fiction", "non-fiction", "science", "history", "biography", "technology"}
-    
+    assert set(stats.keys()) == {
+        "fiction",
+        "non-fiction",
+        "science",
+        "history",
+        "biography",
+        "technology",
+    }
+
 
 @pytest.mark.django_db
 def test_genre_stats_count_correctly(book):
     stats = get_genre_stats()
     assert stats["fiction"] == 1
     assert stats["science"] == 0
-    
+
 
 # ── deduplicate_genres ─────────
 def test_deduplicate_removes_duplicates():
@@ -56,7 +63,7 @@ def test_deduplicate_empty_input():
     result = deduplicate_genres([])
     assert result == set()
 
-    
+
 # ── format_book_titles ──────────
 @pytest.mark.django_db
 def test_format_book_titles(book):
@@ -85,12 +92,12 @@ def test_build_author_summary_custom_separator():
 def test_build_author_summary_uppercase():
     result = build_author_summary("John Doe", "J.K. Rowling", uppercase=True)
     assert result == "JOHN DOE, J.K. ROWLING"
-    
+
 
 def test_build_author_summary_no_authors():
     result = build_author_summary()
     assert result == ""
-    
+
 
 # ── validate_isbn ───────
 def test_validate_isbn():
