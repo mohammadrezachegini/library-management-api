@@ -25,7 +25,7 @@ def book(author, category):
         isbn="9780451524935",
         author=author,
         category=category,
-        genres="fiction",
+        genre="fiction",
         total_copies=3,
         borrowed_copies=1,
     )
@@ -48,14 +48,14 @@ def test_list_books_returns_lightweight_data(client, book):
 
 @pytest.mark.django_db
 def test_filter_books_by_genre(client, book):
-    response = client.get("/api/books/?genres=fiction")
+    response = client.get("/api/books/?genre=fiction")
     assert response.status_code == 200
     assert len(response.json()) == 1
 
 
 @pytest.mark.django_db
 def test_filter_books_by_genre_no_match(client, book):
-    response = client.get("/api/books/?genres=science")
+    response = client.get("/api/books/?genre=science")
     assert response.json() == []
     
 
@@ -93,7 +93,7 @@ def test_create_book_return_201(client, author, category):
         "isbn": "9780060850524",
         "author": author.id,
         "category": category.id,
-        "genres": "fiction",
+        "genre": "fiction",
         "total_copies": 2,
         "borrowed_copies": 0,
     }
@@ -107,7 +107,7 @@ def test_create_book_invalid_isbn_returns_400(client, author, category):
         "title": "Brave New World",
         "isbn": "123",
         "author": author.id,
-        "genres": "fiction",
+        "genre": "fiction",
         "total_copies": 2,
         "borrowed_copies": 0,
     }

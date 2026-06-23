@@ -22,12 +22,12 @@ class BookListCreateView(generics.ListCreateAPIView):
     
     def get_queryset(self):
         queryset = super().get_queryset()
-        genres = self.request.query_params.get("genres")
+        genre = self.request.query_params.get("genre")
         status_filter = self.request.query_params.get("status")
         author = self.request.query_params.get("author")
         
-        if genres:
-            queryset = queryset.filter(genres=genres)
+        if genre:
+            queryset = queryset.filter(genre=genre)
         if status_filter:
             queryset = queryset.filter(status=status_filter)
         if author:
@@ -88,9 +88,9 @@ class CategoryListCreateView(generics.ListCreateAPIView):
 @api_view(["GET"])
 def library_stats(request):
     # Build genre breakdown dict from tuple choices
-    genres_stats = {
-        genres: Book.objects.filter(genres=genres).count()
-        for genres, _ in Book.GENRE_CHOICES
+    genre_stats = {
+        genre: Book.objects.filter(genre=genre).count()
+        for genre, _ in Book.GENRE_CHOICES
     }
     # Build status breakdown dict from tuple choices
     status_stats = {
@@ -102,7 +102,7 @@ def library_stats(request):
         "total_books": Book.objects.count(),
         "total_authors": Author.objects.count(),
         "total_categories": Category.objects.count(),
-        "by_genre": genres_stats,
+        "by_genre": genre_stats,
         "by_status": status_stats
     }
     

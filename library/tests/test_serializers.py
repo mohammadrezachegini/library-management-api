@@ -28,7 +28,7 @@ def book(author, category):
         isbn="1234567890123",
         author=author,
         category=category,
-        genres="fiction",
+        genre="fiction",
         status="available",
         total_copies=5,
         borrowed_copies=2
@@ -75,7 +75,7 @@ def test_valid_isbn(author, category):
         "isbn": "9876543210123",
         "author": author.id,
         "category": category.id,
-        "genres": "fiction",
+        "genre": "fiction",
         "total_copies": 3,
         "borrowed_copies": 0
     }    
@@ -90,7 +90,7 @@ def test_invalid_isbn_too_short(author, category):
         "isbn": "12345",
         "author": author.id,
         "category": category.id,
-        "genres": "fiction",
+        "genre": "fiction",
         "total_copies": 3,
         "borrowed_copies": 0
     }    
@@ -106,7 +106,7 @@ def test_invalid_isbn_non_digits(author, category):
         "isbn": "ABCDEFGHIJKLM",
         "author": author.id,
         "category": category.id,
-        "genres": "fiction",
+        "genre": "fiction",
         "total_copies": 3,
         "borrowed_copies": 0
     }
@@ -123,7 +123,7 @@ def test_book_list_serializer_limited_fields(book):
        "id",
        "title",
        "author_name",
-       "genres",
+       "genre",
        "status",
        "is_available" 
     }

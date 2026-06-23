@@ -18,7 +18,7 @@ def book(author, category):
         isbn="1234567890123",
         author=author,
         category=category,
-        genres="fiction",
+        genre="fiction",
         total_copies=5,
         borrowed_copies=2
     )
@@ -46,9 +46,9 @@ def test_book_default_status(book):
 
 @pytest.mark.django_db
 def test_book_genre_choices():
-    genres = [choice[0] for choice in Book.GENRE_CHOICES]
-    assert "fiction" in genres
-    assert "technology" in genres
+    genre = [choice[0] for choice in Book.GENRE_CHOICES]
+    assert "fiction" in genre
+    assert "technology" in genre
 
 
 @pytest.mark.django_db

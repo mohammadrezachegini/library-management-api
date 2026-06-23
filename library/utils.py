@@ -11,6 +11,7 @@ def get_genre_stats():
         for genre, _ in Book.GENRE_CHOICES
     }
 
+
 # ── 2. Genre deduplication using sets ─────────
 def deduplicate_genres(genres):
     """
@@ -24,6 +25,7 @@ def deduplicate_genres(genres):
     allowed = {genre for genre, _ in Book.GENRE_CHOICES}
     return set(genres) & allowed
 
+
 # ── 3. Format book titles using map() ──────
 def format_book_titles(queryset):
     """
@@ -36,10 +38,10 @@ def format_book_titles(queryset):
     return list(
         map(lambda book: f"{book.genre.upper()}: {book.title}", queryset)
     )
-    
-    
+
+
 # ── 4. Build author summary using *args and **kwargs ────
-def build_anthor_summary(*args, **kwargs):
+def build_author_summary(*args, **kwargs):
     """
     *args   → author full names (positional)
     **kwargs → options like separator, uppercase
@@ -58,6 +60,7 @@ def build_anthor_summary(*args, **kwargs):
         
     return separator.join(names)
 
+
 # ── 5. ISBN validation with string processing ──────────
 def validate_isbn(isbn):
     """
@@ -72,7 +75,7 @@ def validate_isbn(isbn):
     isbn = isbn.strip()
     
     if len(isbn) != 13:
-        return False, "ISBN must be exactly 13 characters."
+        return False, "ISBN must be exactly 13 digits."
     
     if not isbn.isdigit():
         return False, "ISBN must contain only digits."

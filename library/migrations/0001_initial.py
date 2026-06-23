@@ -47,7 +47,7 @@ class Migration(migrations.Migration):
                 ('updated_at', models.DateTimeField(auto_now=True)),
                 ('title', models.CharField(max_length=200)),
                 ('isbn', models.CharField(max_length=13, unique=True)),
-                ('genres', models.CharField(choices=[('fiction', 'Fiction'), ('non-fiction', 'Non-Fiction'), ('science', 'Science'), ('history', 'History'), ('biography', 'Biography'), ('technology', 'Technology')], default='fiction', max_length=20)),
+                ('genre', models.CharField(choices=[('fiction', 'Fiction'), ('non-fiction', 'Non-Fiction'), ('science', 'Science'), ('history', 'History'), ('biography', 'Biography'), ('technology', 'Technology')], default='fiction', max_length=20)),
                 ('status', models.CharField(choices=[('available', 'Available'), ('borrowed', 'Borrowed'), ('reserved', 'Reserved')], default='available', max_length=20)),
                 ('total_copies', models.PositiveIntegerField(default=1)),
                 ('borrowed_copies', models.PositiveIntegerField(default=0)),

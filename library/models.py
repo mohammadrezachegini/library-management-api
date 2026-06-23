@@ -56,7 +56,7 @@ class Book(TimeStampModels):
     category = models.ForeignKey(
         Category, on_delete=models.SET_NULL, null=True, blank=True
     )
-    genres = models.CharField(
+    genre = models.CharField(
         max_length=20, choices=GENRE_CHOICES, default="fiction"
     )
     status = models.CharField(

@@ -56,7 +56,7 @@ class BookSerializer(DynamicFieldSerializer):
             "author",
             "author_name",
             "category",
-            "genres",
+            "genre",
             "status",
             "total_copies",
             "borrowed_copies",
@@ -90,7 +90,7 @@ class BookListSerializer(BookSerializer):
             "id",
             "title",
             "author_name",
-            "genres",
+            "genre",
             "status",
             "is_available"
         ]
