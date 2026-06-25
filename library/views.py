@@ -173,7 +173,7 @@ class CategoryListCreateView(generics.ListCreateAPIView):
 @extend_schema(
     summary="Library statistics",
     description="Returns total counts and a breakdown by genre and status.",
-    responses={200: LibraryStatsSerializer}
+    responses={200: LibraryStatsSerializer},
 )
 @api_view(["GET"])
 def library_stats(request):
