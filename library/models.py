@@ -17,7 +17,7 @@ class Author(TimeStampModels):
     bio = models.TextField()
 
     @property
-    def full_name(self):
+    def full_name(self) -> str:
         return f"{self.first_name} {self.last_name}"
 
     def __str__(self):
@@ -66,11 +66,11 @@ class Book(TimeStampModels):
     borrowed_copies = models.PositiveIntegerField(default=0)
 
     @property
-    def available_copies(self):
+    def available_copies(self) -> int:
         return self.total_copies - self.borrowed_copies
 
     @property
-    def is_available(self):
+    def is_available(self) -> bool:
         return self.available_copies > 0
 
     def __str__(self):

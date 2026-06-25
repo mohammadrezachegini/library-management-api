@@ -1,17 +1,76 @@
 from rest_framework import generics, status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from drf_spectacular.utils import (
+    extend_schema,
+    extend_schema_view,
+    OpenApiParameter,
+    OpenApiExample,
+)
+from drf_spectacular.types import OpenApiTypes
 
-from .models import Author, Book, Category
+from .models import Author, Category, Book
 from .serializers import (
     AuthorSerializer,
+    CategorySerializer,
     BookSerializer,
     BookListSerializer,
-    CategorySerializer,
+    BorrowBookResponseSerializer,
+    LibraryStatsSerializer,
 )
 
 
-# ── Book views ────────────────
+# ── Book views ────────────────────────────────
+@extend_schema_view(
+    get=extend_schema(
+        summary="List all books",
+        description=(
+            "Returns a lightweight list of all books. "
+            "Supports filtering by genre, status, and author."
+        ),
+        parameters=[
+            OpenApiParameter(
+                name="genre",
+                type=OpenApiTypes.STR,
+                location=OpenApiParameter.QUERY,
+                description="Filter by genre (e.g. fiction, science, history)",
+                required=False,
+            ),
+            OpenApiParameter(
+                name="status",
+                type=OpenApiTypes.STR,
+                location=OpenApiParameter.QUERY,
+                description="Filter by status (available, borrowed, reserved)",
+                required=False,
+            ),
+            OpenApiParameter(
+                name="author",
+                type=OpenApiTypes.INT,
+                location=OpenApiParameter.QUERY,
+                description="Filter by author ID",
+                required=False,
+            ),
+        ],
+    ),
+    post=extend_schema(
+        summary="Create a book",
+        description="Creates a new book. ISBN must be exactly 13 digits.",
+        examples=[
+            OpenApiExample(
+                name="Valid book",
+                value={
+                    "title": "1984",
+                    "isbn": "9780451524935",
+                    "author": 1,
+                    "category": 1,
+                    "genre": "fiction",
+                    "total_copies": 3,
+                    "borrowed_copies": 0,
+                },
+            )
+        ],
+    ),
+)
 class BookListCreateView(generics.ListCreateAPIView):
     queryset = Book.objects.select_related("author", "category").all()
 
@@ -36,12 +95,26 @@ class BookListCreateView(generics.ListCreateAPIView):
         return queryset
 
 
+@extend_schema_view(
+    get=extend_schema(summary="Get a book by ID"),
+    put=extend_schema(summary="Update a book"),
+    patch=extend_schema(summary="Partially update a book"),
+    delete=extend_schema(summary="Delete a book"),
+)
 class BookDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Book.objects.select_related("author", "category").all()
     serializer_class = BookSerializer
 
 
-# ── Borrow a book (functional view) ─────────
+# ── Borrow a book (functional view) ───────────────────
+@extend_schema(
+    summary="Borrow a book",
+    description=(
+        "Decrements available copies by 1. "
+        "Returns 400 if no copies are available."
+    ),
+    responses={200: BorrowBookResponseSerializer},
+)
 @api_view(["POST"])
 def borrow_book(request, pk):
     try:
@@ -54,12 +127,13 @@ def borrow_book(request, pk):
 
     if not book.is_available:
         return Response(
-            {"error": "Book is not available for borrowing."},
+            {"error": "No copies available."},
             status=status.HTTP_400_BAD_REQUEST,
         )
 
     book.borrowed_copies += 1
     book.save()
+
     return Response(
         {
             "message": f"You borrowed '{book.title}'.",
@@ -69,32 +143,45 @@ def borrow_book(request, pk):
     )
 
 
-# ── Author views ────────────
+# ── Author views ──────────────────
+@extend_schema_view(
+    get=extend_schema(summary="List all authors"),
+    post=extend_schema(summary="Create an author"),
+)
 class AuthorListCreateView(generics.ListCreateAPIView):
     queryset = Author.objects.all()
     serializer_class = AuthorSerializer
 
 
+@extend_schema(summary="Get an author by ID with their books")
 class AuthorDetailView(generics.RetrieveAPIView):
     queryset = Author.objects.prefetch_related("books").all()
     serializer_class = AuthorSerializer
 
 
-# ── Category views ──────────
+# ── Category views ─────────
+@extend_schema_view(
+    get=extend_schema(summary="List all categories"),
+    post=extend_schema(summary="Create a category"),
+)
 class CategoryListCreateView(generics.ListCreateAPIView):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
 
 
-# ── Stats (functional view) ──────
+# ── Stats (functional view) ────────────
+@extend_schema(
+    summary="Library statistics",
+    description="Returns total counts and a breakdown by genre and status.",
+    responses={200: LibraryStatsSerializer}
+)
 @api_view(["GET"])
 def library_stats(request):
-    # Build genre breakdown dict from tuple choices
     genre_stats = {
         genre: Book.objects.filter(genre=genre).count()
         for genre, _ in Book.GENRE_CHOICES
     }
-    # Build status breakdown dict from tuple choices
+
     status_stats = {
         s: Book.objects.filter(status=s).count()
         for s, _ in Book.STATUS_CHOICES
@@ -108,4 +195,4 @@ def library_stats(request):
         "by_status": status_stats,
     }
 
-    return Response(data, status=status.HTTP_200_OK)
+    return Response(data)

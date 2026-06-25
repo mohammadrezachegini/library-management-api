@@ -4,34 +4,42 @@ from .models import Author, Book, Category
 
 # ── 1. Base serializer with dynamic field filtering ───────────
 class DynamicFieldSerializer(serializers.ModelSerializer):
-    '''
+    """
     A base serializer that allows you to pass a `fields` kwarg
     to limit which fields are returned. Uses set intersection to
     filter only the requested fields that actually exist.
 
     Example:
         AuthorSerializer(author, fields=["id", "full_name"])
-    '''
+    """
+
     def __init__(self, *args, **kwargs):
         requested_fields = kwargs.pop("fields", None)
         super().__init__(*args, **kwargs)
-        
+
         if requested_fields is not None:
             allowed = set(requested_fields)
             existing = set(self.fields)
-            # Set intersection: only keep fields that were both requested AND exist
+            # Set intersection: only keep fields that were both
+            # requested AND exist
             for field_name in existing - allowed:
                 self.fields.pop(field_name)
 
-            
+
 # ── 2. Author serializer ──────────────
 class AuthorSerializer(DynamicFieldSerializer):
     full_name = serializers.ReadOnlyField()
-    
+
     class Meta:
         model = Author
-        fields = ["id", "first_name", "last_name", "full_name", "bio", 
-                  "created_at"]
+        fields = [
+            "id",
+            "first_name",
+            "last_name",
+            "full_name",
+            "bio",
+            "created_at",
+        ]
 
 
 # ── 3. Category serializer ─────────────
@@ -43,10 +51,12 @@ class CategorySerializer(DynamicFieldSerializer):
 
 # ── 4. Full book serializer ────────────────
 class BookSerializer(DynamicFieldSerializer):
-    author_name = serializers.ReadOnlyField(source="author.full_name")
+    author_name = serializers.ReadOnlyField(
+        source="author.full_name"
+    )
     available_copies = serializers.ReadOnlyField()
     is_available = serializers.ReadOnlyField()
-    
+
     class Meta:
         model = Book
         fields = [
@@ -64,17 +74,19 @@ class BookSerializer(DynamicFieldSerializer):
             "is_available",
             "created_at",
         ]
-        
+
     def validate_isbn(self, value):
         # Strip Whitespace from both ends
         value = value.strip()
         # ISBN-13 must be exactly 13 digits
         if len(value) != 13:
-            raise serializers.ValidationError("ISBN-13 must be "
-                                                "exactly 13 digits.")
+            raise serializers.ValidationError(
+                "ISBN-13 must be exactly 13 digits."
+            )
         if not value.isdigit():
-            raise serializers.ValidationError("ISBN-13 must contain "
-                                                "only digits.")           
+            raise serializers.ValidationError(
+                "ISBN-13 must contain only digits."
+            )
         return value
 
 
@@ -84,7 +96,7 @@ class BookListSerializer(BookSerializer):
     Inherits BookSerializer but returns fewer fields.
     Used for GET /api/books/ to keep list responses light.
     """
-    
+
     class Meta(BookSerializer.Meta):
         fields = [
             "id",
@@ -92,5 +104,23 @@ class BookListSerializer(BookSerializer):
             "author_name",
             "genre",
             "status",
-            "is_available"
+            "is_available",
         ]
+
+
+# ── Inline serializers for functional view docs ───────────
+class BorrowBookResponseSerializer(serializers.Serializer):
+    message = serializers.CharField()
+    available_copies = serializers.IntegerField()
+
+
+class LibraryStatsSerializer(serializers.Serializer):
+    total_books = serializers.IntegerField()
+    total_authors = serializers.IntegerField()
+    total_categories = serializers.IntegerField()
+    by_genre = serializers.DictField(
+        child=serializers.IntegerField()
+    )
+    by_status = serializers.DictField(
+        child=serializers.IntegerField()
+    )
