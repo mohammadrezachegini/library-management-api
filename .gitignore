@@ -20,6 +20,7 @@ staticfiles/
 
 # Environment variables
 .env
+.env.docker
 
 # Pytest
 .pytest_cache/
