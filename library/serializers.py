@@ -56,6 +56,8 @@ class BookSerializer(DynamicFieldSerializer):
     )
     available_copies = serializers.ReadOnlyField()
     is_available = serializers.ReadOnlyField()
+    cover_image = serializers.ImageField(required=False, allow_null=True)
+
 
     class Meta:
         model = Book
@@ -72,6 +74,7 @@ class BookSerializer(DynamicFieldSerializer):
             "borrowed_copies",
             "available_copies",
             "is_available",
+            "cover_image",
             "created_at",
         ]
 

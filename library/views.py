@@ -1,3 +1,5 @@
+from django.views.decorators.cache import cache_page
+from django.utils.decorators import method_decorator
 from rest_framework import generics, status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -21,6 +23,7 @@ from .serializers import (
 
 
 # ── Book views ────────────────────────────────
+@method_decorator(cache_page(60 * 15), name="dispatch")
 @extend_schema_view(
     get=extend_schema(
         summary="List all books",

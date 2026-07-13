@@ -1,0 +1,101 @@
+import boto3
+import json
+import os
+from decouple import config
+
+AWS_REGION = config("AWS_REGION", default="us-east-1")
+BUCKET_NAME = config("AWS_STORAGE_BUCKET_NAME", default="library-api-covers")
+FROM_EMAIL = config("FROM_EMAIL")
+
+session = boto3.Session(
+    aws_access_key_id=config("AWS_ACCESS_KEY_ID"),
+    aws_secret_access_key=config("AWS_SECRET_ACCESS_KEY"),
+    region_name=AWS_REGION,
+)
+
+s3 = session.client("s3")
+ses = session.client("ses")
+iam = session.client("iam")
+
+
+# ── 1. Create S3 bucket ────────────
+def create_s3_bucket():
+    print(f"\n📦 Creating S3 bucket: {BUCKET_NAME}")
+    try:
+        if AWS_REGION == "us-east-1":
+            s3.create_bucket(Bucket=BUCKET_NAME)
+        else:
+            s3.create_bucket(
+                Bucket=BUCKET_NAME,
+                CreateBucketConfiguration={"LocationConstraint": AWS_REGION},
+            )
+        s3.put_public_access_block(
+            Bucket=BUCKET_NAME,
+            PublicAccessBlockConfiguration={
+                "BlockPublicAcls": False,
+                "IgnorePublicAcls": False,
+                "BlockPublicPolicy": False,
+                "RestrictPublicBuckets": False,
+            },
+        )
+
+        policy = {
+            "Version": "2012-10-17",
+            "Statement": [
+                {
+                    "Sid": "PublicReadGetObject",
+                    "Effect": "Allow",
+                    "Principal": "*",
+                    "Action": "s3:GetObject",
+                    "Resource": f"arn:aws:s3:::{BUCKET_NAME}/*",
+                }
+            ],
+        }
+        s3.put_bucket_policy(Bucket=BUCKET_NAME, Policy=json.dumps(policy))
+        print(f"✅ S3 bucket '{BUCKET_NAME}' created and set to public read.")
+    except s3.exceptions.BucketAlreadyExists:
+        print(f"✅ Bucket '{BUCKET_NAME}' already exists and is yours.")
+    except Exception as e:
+        print(f"❌ S3 error: {e}")
+
+
+# ── 2. Verify email in SES ─────────
+def verify_ses_email():
+    print(f"\n📧 Verifying SES email: {FROM_EMAIL}")
+    try:
+        ses.verify_email_identity(EmailAddress=FROM_EMAIL)
+        print(f"✅ Verification email sent to {FROM_EMAIL}.")
+        print("   → Check your inbox and click the confirmation link.")
+    except Exception as e:
+        print(f"❌ SES error: {e}")
+
+
+# ── 3. Attach IAM policies to current user ───────────────
+def attach_iam_policies():
+    print("\n🔐 Attaching IAM policies...")
+    try:
+        iam_resource = session.client("iam")
+        user = iam_resource.get_user()
+        username = user["User"]["UserName"]
+        print(f"   Current IAM user: {username}")
+
+        plicies = [
+            "arn:aws:iam::aws:policy/AmazonS3FullAccess",
+            "arn:aws:iam::aws:policy/AmazonSESFullAccess",
+        ]
+
+        for policy_arn in plicies:
+            iam_resource.attach_user_policy(UserName=username, PolicyArn=policy_arn)
+            print(f"✅ Attached: {policy_arn.split('/')[-1]}")
+    except Exception as e:
+        print(f"❌ IAM error: {e}")
+
+
+
+# ── Run all ───────────
+if __name__ == "__main__":
+    print("🚀 Setting up AWS resources for Library API...")
+    attach_iam_policies()
+    create_s3_bucket()
+    verify_ses_email()
+    print("\n✅ Done! Check your email to confirm SES verification.")

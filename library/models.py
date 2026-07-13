@@ -64,6 +64,7 @@ class Book(TimeStampModels):
     )
     total_copies = models.PositiveIntegerField(default=1)
     borrowed_copies = models.PositiveIntegerField(default=0)
+    cover_image = models.ImageField(upload_to="covers/", null=True, blank=True)
 
     @property
     def available_copies(self) -> int:
